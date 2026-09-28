@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原神 カスタム日課管理</title>
+
+<style>
+:root {
+    --accent: #91c9c1;
+    --accent-2: #b7a5e8;
+    --danger: #ff7f89;
+    --radius: 20px;
+    --blur: 24px;
+}
+
+[data-theme="dark"] {
+    --bg: #10141d;
+    --bg2: #1b2430;
+    --surface: rgba(35, 44, 58, 0.58);
+    --surface2: rgba(255,255,255,0.055);
+    --border: rgba(255,255,255,0.12);
+    --text: #edf2f5;
+    --muted: #9baab8;
+    --input: rgba(10,16,25,0.45);
+    --checked: rgba(255,255,255,0.035);
+    --shadow: rgba(0,0,0,0.3);
+    --glass-highlight: rgba(255,255,255,0.13);
+}
+
+[data-theme="light"] {
+    --bg: #e8eff3;
+    --bg2: #dce8eb;
+    --surface: rgba(255,255,255,0.58);
+    --surface2: rgba(255,255,255,0.42);
+    --border: rgba(255,255,255,0.72);
+    --text: #34434b;
+    --muted: #82939b;
+    --input: rgba(255,255,255,0.55);
+    --checked: rgba(100,130,135,0.08);
+    --shadow: rgba(65,90,100,0.12);
+    --glass-highlight: rgba(255,255,255,0.8);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: var(--text);
+    margin: 0;
+    padding: 30px 14px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    background:
+        radial-gradient(ellipse at 15% 10%, rgba(89,160,155,0.19), transparent 45%),
+        radial-gradient(ellipse at 90% 85%, rgba(143,117,194,0.17), transparent 45%),
+        var(--bg);
+    background-attachment: fixed;
+    transition: background 0.35s, color 0.35s;
+}
+
+/* Main glass */
+
+.container {
+    width: 100%;
+    max-width: 500px;
+    height: fit-content;
+    padding: 25px;
+    border-radius: 26px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    box-shadow:
+        0 20px 60px var(--shadow),
+        inset 0 1px 0 var(--glass-highlight);
+    backdrop-filter: blur(var(--blur)) saturate(150%);
+    -webkit-backdrop-filter: blur(var(--blur)) saturate(150%);
+    position: relative;
+    overflow: hidden;
+    transition: background 0.35s, border 0.35s;
+}
+
+.container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--glass-highlight),
+        transparent
+    );
+}
+
+/* Header */
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 22px;
+}
+
+h1 {
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--text);
+    margin: 0;
+}
+
+/* Theme button */
+
+.theme-btn {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 19px;
+    cursor: pointer;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transition: 0.25s;
+}
+
+.theme-btn:hover {
+    transform: rotate(12deg) scale(1.05);
+    background: var(--surface);
+}
+
+/* Add form */
+
+.add-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    margin-bottom: 24px;
+    border-radius: 19px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.add-form input,
+.add-form select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--input);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+.add-form input::placeholder {
+    color: var(--muted);
+}
+
+.add-form select option {
+    background: var(--bg2);
+    color: var(--text);
+}
+
+.add-form input:focus,
+.add-form select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(145,201,193,0.12);
+}
+
+.add-form button {
+    padding: 13px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    color: #102322;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    background: linear-gradient(135deg, #a5d9d0, #78aaa7);
+    box-shadow:
+        0 5px 18px rgba(92,170,158,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.6);
+    transition: 0.2s;
+}
+
+.add-form button:hover {
+    filter: brightness(1.08);
+    transform: translateY(-2px);
+}
+
+.add-form button:active {
+    transform: scale(0.98);
+}
+
+/* Todo list */
+
+#todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 13px;
+    border-radius: 15px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    box-shadow:
+        0 5px 15px rgba(0,0,0,0.06),
+        inset 0 1px 0 var(--glass-highlight);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    transition: 0.25s;
+}
+
+.todo-item:hover {
+    transform: translateY(-2px);
+    background: var(--surface);
+    box-shadow: 0 8px 20px var(--shadow);
+}
+
+.todo-left {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.todo-left input {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+    margin: 0 12px 0 0;
+    border: 1.5px solid var(--muted);
+    border-radius: 6px;
+    background: var(--input);
+    cursor: pointer;
+    position: relative;
+    transition: 0.2s;
+}
+
+.todo-left input:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.todo-left input:checked::after {
+    content: "✓";
+    position: absolute;
+    color: #172b29;
+    font-size: 13px;
+    font-weight: bold;
+    left: 3px;
+    top: -1px;
+}
+
+.task-text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text);
+    overflow-wrap: anywhere;
+}
+
+.todo-item.checked {
+    border-left-color: var(--muted);
+    background: var(--checked);
+    box-shadow: none;
+}
+
+.todo-item.checked .task-text {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.badge {
+    font-size: 10px;
+    padding: 5px 7px;
+    border-radius: 7px;
+    background: rgba(145,201,193,0.12);
+    border: 1px solid rgba(145,201,193,0.17);
+    color: var(--accent);
+    margin-left: 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    font-weight: 600;
+}
+
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--danger);
+    font-size: 21px;
+    cursor: pointer;
+    padding: 3px 6px;
+    margin-left: 8px;
+    border-radius: 8px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: 0.2s;
+}
+
+.delete-btn:hover {
+    background: rgba(255,100,120,0.12);
+    transform: scale(1.1);
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 15px 10px;
+    }
+
+    .container {
+        padding: 20px 15px;
+        border-radius: 22px;
+    }
+
+    h1 {
+        font-size: 16px;
+    }
+
+    .add-form {
+        padding: 14px;
+    }
+
+    .todo-item {
+        padding: 13px 9px;
+    }
+
+    .task-text {
+        font-size: 13px;
+    }
+
+    .badge {
+        font-size: 9px;
+        padding: 4px 5px;
+        margin-left: 5px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="header">
+        <h1>✦ 原神 カスタム日課管理 ✦</h1>
+        <button class="theme-btn" id="theme-toggle"
+        onclick="toggleTheme()" aria-label="テーマ切り替え">☀</button>
+    </div>
+
+    <div class="add-form">
+        <input type="text" id="task-input"
+        placeholder="新しい日課を入力（例: 聖遺物回収）" required>
+
+        <select id="reset-type-input">
+            <option value="24h">チェックを入れてから24時間後にリセット</option>
+            <option value="daily5am">毎日 朝5時に自動リセット</option>
+            <option value="weeklyMon5am">毎週月曜日 朝5時に自動リセット</option>
+        </select>
+
+        <button onclick="addTask()">＋ タスクを追加</button>
+    </div>
+
+    <div id="todo-list"></div>
+
+</div>
+
+<script>
+/* Theme */
+
+let currentTheme = localStorage.getItem('genshin_theme') || 'dark';
+
+function applyTheme() {
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    document.getElementById('theme-toggle').textContent =
+        currentTheme === 'dark' ? '☀' : '☾';
+}
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    localStorage.setItem('genshin_theme', currentTheme);
+    applyTheme();
+}
+
+applyTheme();
+
+/* Todo */
+
+let tasks = JSON.parse(localStorage.getItem('genshin_custom_todos')) || [];
+
+const typeLabels = {
+    '24h': '24時間後',
+    'daily5am': '毎日5時',
+    'weeklyMon5am': '月曜5時'
+};
+
+function checkAutoReset() {
+    const now = new Date();
+    let updated = false;
+
+    tasks.forEach(task => {
+        if (!task.checked || !task.checkedTime) return;
+
+        const checkedDate = new Date(task.checkedTime);
+
+        if (task.resetType === '24h') {
+            if (now.getTime() - checkedDate.getTime() >= 86400000) {
+                task.checked = false;
+                task.checkedTime = null;
+                updated = true;
+            }
+        }
+        else if (task.resetType === 'daily5am') {
+            let deadline = new Date(checkedDate);
+            deadline.setHours(5, 0, 0, 0);
+
+            if (checkedDate.getHours() >= 5) {
+                deadline.setDate(deadline.getDate() + 1);
+            }
+
+            if (now >= deadline) {
+                task.checked = false;
+                task.checkedTime = null;
+                updated = true;
+            }
+        }
+        else if (task.resetType === 'weeklyMon5am') {
+            let deadline = new Date(checkedDate);
+            deadline.setHours(5, 0, 0, 0);
+
+            let dayDiff = (1 - checkedDate.getDay() + 7) % 7;
+
+            if (dayDiff === 0 && checkedDate.getHours() >= 5) {
+                dayDiff = 7;
+            }
+
+            deadline.setDate(deadline.getDate() + dayDiff);
+
+            if (now >= deadline) {
+                task.checked = false;
+                task.checkedTime = null;
+                updated = true;
+            }
+        }
+    });
+
+    if (updated) saveToStorage();
+}
+
+function renderTasks() {
+    checkAutoReset();
+
+    const container = document.getElementById('todo-list');
+    container.innerHTML = '';
+
+    if (tasks.length === 0) {
+        container.innerHTML =
+        '<p style="text-align:center;color:var(--muted);font-size:14px;">タスクがありません。上のフォームから追加してください。</p>';
+        return;
+    }
+
+    tasks.forEach((task, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `todo-item ${task.checked ? 'checked' : ''}`;
+
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'todo-left';
+        leftDiv.onclick = () => toggleTask(index);
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = task.checked;
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'task-text';
+        textSpan.innerText = task.text;
+
+        const badge = document.createElement('span');
+        badge.className = 'badge';
+        badge.innerText = typeLabels[task.resetType] || '24時間後';
+
+        leftDiv.appendChild(checkbox);
+        leftDiv.appendChild(textSpan);
+        leftDiv.appendChild(badge);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = '×';
+
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteTask(index);
+        };
+
+        itemDiv.appendChild(leftDiv);
+        itemDiv.appendChild(deleteBtn);
+        container.appendChild(itemDiv);
+    });
+}
+
+function addTask() {
+    const input = document.getElementById('task-input');
+    const typeInput = document.getElementById('reset-type-input');
+
+    if (!input.value.trim()) return;
+
+    const newTask = {
+        text: input.value.trim(),
+        resetType: typeInput.value,
+        checked: false,
+        checkedTime: null
+    };
+
+    tasks.push(newTask);
+    saveToStorage();
+    renderTasks();
+
+    input.value = '';
+}
+
+function toggleTask(index) {
+    tasks[index].checked = !tasks[index].checked;
+
+    tasks[index].checkedTime = tasks[index].checked
+        ? new Date().toISOString()
+        : null;
+
+    saveToStorage();
+    renderTasks();
+}
+
+function deleteTask(index) {
+    if (confirm(`「${tasks[index].text}」を削除しますか？`)) {
+        tasks.splice(index, 1);
+        saveToStorage();
+        renderTasks();
+    }
+}
+
+function saveToStorage() {
+    localStorage.setItem('genshin_custom_todos', JSON.stringify(tasks));
+}
+
+renderTasks();
+</script>
+
+</body>
+</html>
